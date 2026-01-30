@@ -1,0 +1,28 @@
+{
+  "name": "it-asset-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "build": "bun build src/index.ts --outdir dist",
+    "start": "bun run dist/index.js",
+    "test": "bun test",
+    "generate": "drizzle-kit generate",
+    "migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "elysia": "latest",
+    "@elysiajs/jwt": "latest",
+    "@elysiajs/swagger": "latest",
+    "@elysiajs/cors": "latest",
+    "@elysiajs/static": "latest",
+    "drizzle-orm": "latest",
+    "postgres": "latest",
+    "zod": "latest",
+    "bcrypt": "latest",
+    "date-fns": "latest"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "drizzle-kit": "latest"
+  }
+}
