@@ -36,8 +36,29 @@ services:
     volumes:
       - minio_data:/data
 
-  # Backend and Frontend will be added later after their Dockerfiles are created.
-  # For now, we set up the infrastructure.
+  backend:
+    build: ./backend
+    container_name: it_asset_backend
+    restart: always
+    environment:
+      # Use service name 'postgres' and internal port 5432
+      DATABASE_URL: postgresql://user:password@postgres:5432/it_asset_db
+      JWT_ACCESS_SECRET: your-access-secret-key-change-it
+      JWT_REFRESH_SECRET: your-refresh-secret-key-change-it
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - valkey
+
+  frontend:
+    build: ./frontend
+    container_name: it_asset_frontend
+    restart: always
+    ports:
+      - "80:80" # Map to port 80 to avoid conflict with dev server on 5173 if running, or just use 80 for prod
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:
