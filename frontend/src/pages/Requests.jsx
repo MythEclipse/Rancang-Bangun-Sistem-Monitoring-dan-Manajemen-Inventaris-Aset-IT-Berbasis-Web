@@ -1,5 +1,6 @@
-import { createResource, Show, For } from "solid-js";
+import { createResource, Show, For, createSignal } from "solid-js";
 import { authStore } from "../store/auth";
+import Modal from "../components/Modal";
 
 const fetchRequests = async () => {
   const response = await fetch("/api/requests", {
@@ -10,14 +11,86 @@ const fetchRequests = async () => {
 };
 
 export default function Requests() {
-  const [requests] = createResource(fetchRequests);
+  const [requests, { refetch }] = createResource(fetchRequests);
+  const [isModalOpen, setIsModalOpen] = createSignal(false);
+  const [formData, setFormData] = createSignal({
+    title: "",
+    requestType: "REPLACEMENT",
+    priority: "MEDIUM",
+    description: "",
+  });
+
+  const openAddModal = () => {
+    setFormData({
+      title: "",
+      requestType: "REPLACEMENT",
+      priority: "MEDIUM",
+      description: "",
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleInput = (e) => {
+    setFormData({ ...formData(), [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("/api/requests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authStore.token()}`,
+        },
+        body: JSON.stringify(formData()),
+      });
+
+      if (response.ok) {
+        setIsModalOpen(false);
+        refetch();
+        alert("Request submitted successfully!");
+      } else {
+        alert("Failed to submit request");
+      }
+    } catch (error) {
+      alert("Network error");
+    }
+  };
+
+  const handleStatusChange = async (requestId, status) => {
+    if (!confirm(`Are you sure you want to ${status} this request?`)) return;
+
+    try {
+      const response = await fetch(`/api/requests/${requestId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authStore.token()}`,
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      if (response.ok) {
+        refetch();
+        alert(`Request ${status} successfully!`);
+      } else {
+        alert("Failed to update status");
+      }
+    } catch (error) {
+      alert("Network error");
+    }
+  };
 
   return (
     <div>
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Requests</h2>
         <Show when={authStore.hasRole(["TECHNICIAN"])}>
-          <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
+          <button
+            onClick={openAddModal}
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition"
+          >
             + New Request
           </button>
         </Show>
@@ -59,6 +132,9 @@ export default function Requests() {
                 <h3 class="text-lg font-bold text-gray-800 mb-2">
                   {req.title}
                 </h3>
+                <p class="text-sm text-gray-500 mb-4">
+                  {req.description || "No description."}
+                </p>
 
                 <Show
                   when={
@@ -67,10 +143,16 @@ export default function Requests() {
                   }
                 >
                   <div class="mt-6 flex gap-3 border-t pt-4">
-                    <button class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-sm font-medium transition">
+                    <button
+                      onClick={() => handleStatusChange(req.id, "APPROVED")}
+                      class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-sm font-medium transition"
+                    >
                       Approve
                     </button>
-                    <button class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-2 rounded-lg text-sm font-medium transition">
+                    <button
+                      onClick={() => handleStatusChange(req.id, "REJECTED")}
+                      class="flex-1 bg-red-100 hover:bg-red-200 text-red-700 py-2 rounded-lg text-sm font-medium transition"
+                    >
                       Reject
                     </button>
                   </div>
@@ -80,6 +162,84 @@ export default function Requests() {
           </For>
         </Show>
       </div>
+
+      <Modal
+        isOpen={isModalOpen()}
+        onClose={() => setIsModalOpen(false)}
+        title="Submit New Request"
+      >
+        <form onSubmit={handleSubmit} class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Title</label>
+            <input
+              type="text"
+              name="title"
+              value={formData().title}
+              onInput={handleInput}
+              class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Type</label>
+            <select
+              name="requestType"
+              value={formData().requestType}
+              onInput={handleInput}
+              class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500"
+            >
+              <option value="REPLACEMENT">Replacement</option>
+              <option value="DISPOSAL">Disposal</option>
+              <option value="MAJOR_REPAIR">Major Repair</option>
+              <option value="PROCUREMENT_ADDITIONAL">New Procurement</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              Priority
+            </label>
+            <select
+              name="priority"
+              value={formData().priority}
+              onInput={handleInput}
+              class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500"
+            >
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+              <option value="CRITICAL">Critical</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              Description
+            </label>
+            <textarea
+              name="description"
+              value={formData().description}
+              onInput={handleInput}
+              class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500"
+              rows="3"
+            />
+          </div>
+
+          <div class="flex justify-end pt-4">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              class="mr-3 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+            >
+              Submit
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

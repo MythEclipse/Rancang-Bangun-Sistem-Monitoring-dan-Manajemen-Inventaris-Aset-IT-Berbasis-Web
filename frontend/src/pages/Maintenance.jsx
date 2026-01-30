@@ -1,5 +1,6 @@
-import { createResource, Show, For } from "solid-js";
+import { createResource, Show, For, createSignal } from "solid-js";
 import { authStore } from "../store/auth";
+import Modal from "../components/Modal";
 
 const fetchMaintenance = async () => {
   const response = await fetch("/api/maintenance", {
@@ -10,14 +11,62 @@ const fetchMaintenance = async () => {
 };
 
 export default function Maintenance() {
-  const [logs] = createResource(fetchMaintenance);
+  const [logs, { refetch }] = createResource(fetchMaintenance);
+  const [isModalOpen, setIsModalOpen] = createSignal(false);
+  const [formData, setFormData] = createSignal({
+    title: "",
+    description: "",
+    priority: "MEDIUM",
+    assetId: "", // ideally this would be a dropdown selection
+  });
+
+  const openAddModal = () => {
+    setFormData({
+      title: "",
+      description: "",
+      priority: "MEDIUM",
+      assetId: "",
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleInput = (e) => {
+    setFormData({ ...formData(), [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch("/api/maintenance", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authStore.token()}`,
+        },
+        body: JSON.stringify(formData()),
+      });
+
+      if (response.ok) {
+        setIsModalOpen(false);
+        refetch();
+        alert("Maintenance log created successfully!");
+      } else {
+        alert("Failed to create maintenance log");
+      }
+    } catch (error) {
+      alert("Network error");
+    }
+  };
 
   return (
     <div>
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Maintenance Logs</h2>
         <Show when={authStore.hasRole(["ADMIN", "TECHNICIAN"])}>
-          <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition">
+          <button
+            onClick={openAddModal}
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition"
+          >
             + New Log
           </button>
         </Show>
@@ -67,13 +116,90 @@ export default function Maintenance() {
                   >
                     {log.status}
                   </span>
-                  <button class="text-gray-400 hover:text-gray-600">➔</button>
                 </div>
               </div>
             )}
           </For>
         </Show>
       </div>
+
+      <Modal
+        isOpen={isModalOpen()}
+        onClose={() => setIsModalOpen(false)}
+        title="Create Maintenance Log"
+      >
+        <form onSubmit={handleSubmit} class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Title</label>
+            <input
+              type="text"
+              name="title"
+              value={formData().title}
+              onInput={handleInput}
+              class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              Asset (UUID)
+            </label>
+            <input
+              type="text"
+              name="assetId"
+              placeholder="Enter Asset UUID"
+              value={formData().assetId}
+              onInput={handleInput}
+              class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              Priority
+            </label>
+            <select
+              name="priority"
+              value={formData().priority}
+              onInput={handleInput}
+              class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500"
+            >
+              <option value="LOW">Low</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HIGH">High</option>
+              <option value="CRITICAL">Critical</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              Description
+            </label>
+            <textarea
+              name="description"
+              value={formData().description}
+              onInput={handleInput}
+              class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500"
+              rows="3"
+            />
+          </div>
+
+          <div class="flex justify-end pt-4">
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              class="mr-3 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-md"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+            >
+              Submit Log
+            </button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
