@@ -10,16 +10,18 @@
     "migrate": "drizzle-kit migrate"
   },
   "dependencies": {
-    "elysia": "latest",
-    "@elysiajs/jwt": "latest",
-    "@elysiajs/swagger": "latest",
     "@elysiajs/cors": "latest",
+    "@elysiajs/jwt": "latest",
     "@elysiajs/static": "latest",
-    "drizzle-orm": "latest",
-    "postgres": "latest",
-    "zod": "latest",
+    "@elysiajs/swagger": "latest",
+    "@types/jsonwebtoken": "^9.0.10",
     "bcrypt": "latest",
-    "date-fns": "latest"
+    "date-fns": "latest",
+    "drizzle-orm": "latest",
+    "elysia": "latest",
+    "jsonwebtoken": "^9.0.3",
+    "postgres": "latest",
+    "zod": "latest"
   },
   "devDependencies": {
     "bun-types": "latest",
