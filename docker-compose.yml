@@ -13,6 +13,11 @@ services:
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d it_asset_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   valkey:
     image: valkey/valkey:7.2.5-alpine
@@ -47,9 +52,12 @@ services:
       JWT_REFRESH_SECRET: your-refresh-secret-key-change-it
     ports:
       - "3000:3000"
+    command: sh -c "bun x drizzle-kit push && bun run src/index.ts"
     depends_on:
-      - postgres
-      - valkey
+      postgres:
+        condition: service_healthy
+      valkey:
+        condition: service_started
 
   frontend:
     build: ./frontend
