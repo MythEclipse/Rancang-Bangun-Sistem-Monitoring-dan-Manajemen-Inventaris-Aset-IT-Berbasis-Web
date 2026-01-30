@@ -1,138 +1,116 @@
-import { createResource, createSignal, Show, For } from "solid-js";
-import { useNavigate } from "@solidjs/router";
+import { createResource, Show, For } from "solid-js";
+import { authStore } from "../store/auth";
 
-const fetchAssets = async () => {
-  const token = localStorage.getItem("token");
-  const response = await fetch("/api/assets", {
-    headers: { Authorization: `Bearer ${token}` },
+const fetchStats = async () => {
+  const response = await fetch("/api/dashboard/stats", {
+    headers: { Authorization: `Bearer ${authStore.token()}` },
   });
-  if (!response.ok) {
-    throw new Error("Unauthorized");
-  }
   return response.json();
 };
 
-export default function Dashboard() {
-  const [assets, { refetch }] = createResource(fetchAssets);
-  const navigate = useNavigate();
+const StatCard = (props) => (
+  <div class={`bg-white rounded-xl shadow-sm p-6 border-l-4 ${props.color}`}>
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">
+          {props.title}
+        </p>
+        <p class="mt-2 text-3xl font-bold text-gray-900">{props.value}</p>
+      </div>
+      <div class={`p-3 rounded-full ${props.iconBg} text-white`}>
+        {props.icon}
+      </div>
+    </div>
+    <Show when={props.subtext}>
+      <p class="mt-3 text-xs text-gray-400">{props.subtext}</p>
+    </Show>
+  </div>
+);
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
+export default function Dashboard() {
+  const [stats] = createResource(fetchStats);
 
   return (
-    <div class="flex h-screen bg-gray-100">
-      {/* Sidebar */}
-      <aside class="w-64 bg-white shadow-md hidden md:block">
-        <div class="p-6">
-          <h1 class="text-2xl font-bold text-blue-600">AssetMgr</h1>
+    <div>
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">
+        Welcome back, {authStore.user()?.fullName}
+      </h2>
+
+      <Show when={stats.loading}>
+        <div class="flex justify-center p-8">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
-        <nav class="mt-6">
-          <a
-            href="#"
-            class="block px-6 py-2 text-gray-700 hover:bg-gray-100 bg-gray-100 border-r-4 border-blue-600"
-          >
-            Dashboard
-          </a>
-          <a href="#" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">
-            Assets
-          </a>
-          <a href="#" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">
-            Reports
-          </a>
-          <a href="#" class="block px-6 py-2 text-gray-600 hover:bg-gray-100">
-            Settings
-          </a>
-        </nav>
-      </aside>
+      </Show>
 
-      {/* Main Content */}
-      <main class="flex-1 overflow-y-auto">
-        <header class="flex items-center justify-between px-6 py-4 bg-white shadow-sm">
-          <h2 class="text-xl font-semibold text-gray-800">Dashboard</h2>
-          <button onClick={logout} class="text-gray-600 hover:text-red-600">
-            Logout
-          </button>
-        </header>
+      <Show when={!stats.loading && stats()}>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard
+            title="Total Assets"
+            value={stats().assets.total}
+            icon="💼"
+            color="border-blue-500"
+            iconBg="bg-blue-500"
+            subtext={`${stats().assets.active} Active, ${stats().assets.repair} Repair`}
+          />
+          <StatCard
+            title="Maintenance"
+            value={stats().maintenance.total}
+            icon="🔧"
+            color="border-orange-500"
+            iconBg="bg-orange-500"
+            subtext={`${stats().maintenance.inProgress} In Progress`}
+          />
+          <StatCard
+            title="Requests"
+            value={stats().requests.total}
+            icon="📝"
+            color="border-purple-500"
+            iconBg="bg-purple-500"
+            subtext={`${stats().requests.pending} Pending`}
+          />
+          <Show when={authStore.user()?.role === "ADMIN"}>
+            <StatCard
+              title="Users"
+              value={stats().users.total}
+              icon="👥"
+              color="border-green-500"
+              iconBg="bg-green-500"
+              subtext={`${stats().users.technicians} Techs, ${stats().users.managers} Managers`}
+            />
+          </Show>
+        </div>
 
-        <div class="p-6">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div class="p-4 bg-white rounded-lg shadow-sm">
-              <h3 class="text-gray-500 text-sm">Total Assets</h3>
-              <p class="text-2xl font-bold">{assets()?.length || 0}</p>
-            </div>
-            {/* More stats */}
-          </div>
-
-          <div class="bg-white rounded-lg shadow-sm overflow-hidden">
-            <div class="px-6 py-4 border-b">
-              <h3 class="font-semibold text-gray-800">Recent Assets</h3>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full text-left">
-                <thead class="bg-gray-50 border-b">
-                  <tr>
-                    <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase">
-                      Code
-                    </th>
-                    <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase">
-                      Name
-                    </th>
-                    <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase">
-                      Status
-                    </th>
-                    <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase">
-                      Category
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                  <Show when={assets.loading}>
-                    <tr>
-                      <td colSpan="4" class="px-6 py-4 text-center">
-                        Loading...
-                      </td>
-                    </tr>
-                  </Show>
-                  <Show when={assets.error}>
-                    <tr>
-                      <td
-                        colSpan="4"
-                        class="px-6 py-4 text-center text-red-500"
-                      >
-                        Error loading assets. Please login again.
-                      </td>
-                    </tr>
-                  </Show>
-                  <For each={assets()}>
-                    {(asset) => (
-                      <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                          {asset.assetCode}
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-600">
-                          {asset.name}
-                        </td>
-                        <td class="px-6 py-4 text-sm">
-                          <span
-                            class={`px-2 py-1 text-xs rounded-full ${asset.status === "ACTIVE" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}
-                          >
-                            {asset.status}
-                          </span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-600">
-                          {asset.categoryId}
-                        </td>
-                      </tr>
-                    )}
-                  </For>
-                </tbody>
-              </table>
+        {/* Role Specific Content */}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Recent Activity or Charts could go here */}
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-bold text-gray-800 mb-4">Quick Actions</h3>
+            <div class="space-y-3">
+              <Show when={authStore.user()?.role === "TECHNICIAN"}>
+                <button class="w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-700 font-medium transition">
+                  + Create New Maintenance Log
+                </button>
+                <button class="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg text-purple-700 font-medium transition">
+                  + Submit New Request
+                </button>
+              </Show>
+              <Show when={authStore.user()?.role === "ADMIN"}>
+                <button class="w-full text-left px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg text-green-700 font-medium transition">
+                  + Add New User
+                </button>
+                <button class="w-full text-left px-4 py-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg text-indigo-700 font-medium transition">
+                  + Add New Asset
+                </button>
+              </Show>
+              <Show when={authStore.user()?.role === "MANAGER"}>
+                <button class="w-full text-left px-4 py-3 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-700 font-medium transition">
+                  Review Pending Requests ({stats().pendingApprovals || 0})
+                </button>
+              </Show>
             </div>
           </div>
         </div>
-      </main>
+      </Show>
     </div>
   );
 }

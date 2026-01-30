@@ -1,5 +1,6 @@
 import { createSignal } from "solid-js";
 import { useNavigate } from "@solidjs/router";
+import { authStore } from "../store/auth";
 
 export default function Login() {
   const [username, setUsername] = createSignal("");
@@ -22,9 +23,8 @@ export default function Login() {
       }
 
       const data = await response.json();
-      localStorage.setItem("token", data.accessToken);
-      // Store user info if needed
-      navigate("/dashboard");
+      authStore.login(data.accessToken, data.user);
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setError("Invalid credentials or server error");
     }
@@ -34,16 +34,16 @@ export default function Login() {
     <div class="flex items-center justify-center min-h-screen bg-gray-100">
       <div class="px-8 py-6 mt-4 text-left bg-white shadow-lg rounded-lg w-full max-w-sm">
         <h3 class="text-2xl font-bold text-center text-gray-800">
-          Login to Asset Manager
+          IT Asset Manager
         </h3>
         <form onSubmit={handleLogin}>
           <div class="mt-4">
-            <label class="block" for="username">
+            <label class="block text-gray-700" for="username">
               Username
             </label>
             <input
               type="text"
-              placeholder="Username"
+              placeholder="Enter username"
               class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
               value={username()}
               onInput={(e) => setUsername(e.target.value)}
@@ -51,12 +51,12 @@ export default function Login() {
             />
           </div>
           <div class="mt-4">
-            <label class="block" for="password">
+            <label class="block text-gray-700" for="password">
               Password
             </label>
             <input
               type="password"
-              placeholder="Password"
+              placeholder="Enter password"
               class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-1 focus:ring-blue-600"
               value={password()}
               onInput={(e) => setPassword(e.target.value)}
@@ -66,7 +66,7 @@ export default function Login() {
           {error() && <p class="text-red-500 text-sm mt-2">{error()}</p>}
           <div class="flex items-baseline justify-between">
             <button
-              class="px-6 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-900 w-full"
+              class="px-6 py-2 mt-4 text-white bg-blue-600 rounded-lg hover:bg-blue-700 w-full transition duration-300"
               type="submit"
             >
               Login
