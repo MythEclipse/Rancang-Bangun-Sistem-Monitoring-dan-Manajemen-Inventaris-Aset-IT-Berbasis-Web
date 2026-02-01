@@ -68,6 +68,22 @@ services:
     depends_on:
       - backend
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: it_asset_ngrok
+    restart: unless-stopped
+    command: start --all --config /etc/ngrok.yml
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml
+    ports:
+      - "4040:4040"
+    depends_on:
+      - frontend
+      - backend
+
+
 volumes:
   postgres_data:
   valkey_data:

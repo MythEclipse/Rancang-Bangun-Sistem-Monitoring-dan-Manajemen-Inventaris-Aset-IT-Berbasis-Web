@@ -70,6 +70,39 @@ Pengajuan Teknisi → Notifikasi Manajer → Validasi → Update Sistem
 7. ✅ Manajemen Pengguna
 8. ✅ Log Maintenance
 
+## 🌐 Remote Access (Tunneling)
+
+Untuk mengakses aplikasi dari internet (misalnya untuk demo atau testing), project ini menggunakan **Ngrok** yang sudah terintegrasi dalam config docker-compose.
+
+### Persiapan
+
+Pastikan Anda memiliki Authtoken dari [dashboard.ngrok.com](https://dashboard.ngrok.com).
+
+### Konfigurasi
+
+Tambahkan token ngrok Anda ke file `.env` di root project:
+
+```bash
+NGROK_AUTHTOKEN=your_auth_token_here
+```
+
+### Menjalankan Tunnel
+
+Service ngrok akan otomatis berjalan ketika anda menjalankan `docker-compose up`.
+
+Untuk melihat URL publik yang aktif:
+
+1. Buka browser dan akses [http://localhost:4040](http://localhost:4040)
+2. Atau cek via CLI:
+   ```bash
+   curl http://localhost:4040/api/tunnels
+   ```
+
+Tunnel yang tersedia:
+
+- **Frontend**: Akses ke UI aplikasi
+- **Backend**: Akses ke API server
+
 ---
 
 **Author**: IT Asset Management Team  
