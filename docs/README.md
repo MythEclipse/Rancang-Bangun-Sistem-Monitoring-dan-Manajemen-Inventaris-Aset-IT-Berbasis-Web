@@ -20,6 +20,18 @@ Sistem Monitoring dan Manajemen Inventaris Aset IT adalah aplikasi berbasis web 
 | **Teknisi/Staff IT**          | Melakukan update status kondisi aset, input perbaikan, dan verifikasi aset |
 | **Manajer/Kepala Departemen** | Memberikan persetujuan pengadaan/penghapusan aset dan melihat laporan      |
 
+## 🖼️ Visualisasi Sistem
+
+Berikut adalah gambaran umum sistem melalui diagram:
+
+### Arsitektur Sistem
+
+![Architecture](./images/Architecture.png)
+
+### Use Case Diagram Utama
+
+![Use Case Diagram](./images/Use_Case_Diagram_Main.png)
+
 ## 📁 Struktur Dokumentasi
 
 | File                                               | Deskripsi                               |
@@ -31,6 +43,10 @@ Sistem Monitoring dan Manajemen Inventaris Aset IT adalah aplikasi berbasis web 
 | [05-class-diagram.md](./05-class-diagram.md)       | Class Diagram struktur sistem           |
 | [06-technology-stack.md](./06-technology-stack.md) | Stack teknologi yang digunakan          |
 | [07-database-schema.md](./07-database-schema.md)   | Skema database detail                   |
+
+### Entity Relationship Diagram (ERD)
+
+![ERD Complete](./images/ERD_Complete.png)
 
 ## 🔄 Alur Kerja Utama
 
