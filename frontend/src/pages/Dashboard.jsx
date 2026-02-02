@@ -30,6 +30,31 @@ const StatCard = (props) => (
 export default function Dashboard() {
   const [stats] = createResource(fetchStats);
 
+  const handleCreateMaintenance = () => {
+    // Navigate or open modal for creating maintenance log
+    window.location.href = "#/maintenance";
+  };
+
+  const handleSubmitRequest = () => {
+    // Navigate to requests page
+    window.location.href = "#/requests";
+  };
+
+  const handleAddUser = () => {
+    // Navigate to users management
+    window.location.href = "#/admin/users";
+  };
+
+  const handleAddAsset = () => {
+    // Navigate to assets page
+    window.location.href = "#/assets";
+  };
+
+  const handleReviewRequests = () => {
+    // Navigate to requests for manager approval
+    window.location.href = "#/requests";
+  };
+
   return (
     <div>
       <h2 class="text-2xl font-bold text-gray-800 mb-6">
@@ -87,23 +112,33 @@ export default function Dashboard() {
             <h3 class="text-lg font-bold text-gray-800 mb-4">Quick Actions</h3>
             <div class="space-y-3">
               <Show when={authStore.user()?.role === "TECHNICIAN"}>
-                <button class="w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-700 font-medium transition">
+                <button 
+                  onClick={handleCreateMaintenance}
+                  class="w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-700 font-medium transition">
                   + Create New Maintenance Log
                 </button>
-                <button class="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg text-purple-700 font-medium transition">
+                <button 
+                  onClick={handleSubmitRequest}
+                  class="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg text-purple-700 font-medium transition">
                   + Submit New Request
                 </button>
               </Show>
               <Show when={authStore.user()?.role === "ADMIN"}>
-                <button class="w-full text-left px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg text-green-700 font-medium transition">
+                <button 
+                  onClick={handleAddUser}
+                  class="w-full text-left px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg text-green-700 font-medium transition">
                   + Add New User
                 </button>
-                <button class="w-full text-left px-4 py-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg text-indigo-700 font-medium transition">
+                <button 
+                  onClick={handleAddAsset}
+                  class="w-full text-left px-4 py-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg text-indigo-700 font-medium transition">
                   + Add New Asset
                 </button>
               </Show>
               <Show when={authStore.user()?.role === "MANAGER"}>
-                <button class="w-full text-left px-4 py-3 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-700 font-medium transition">
+                <button 
+                  onClick={handleReviewRequests}
+                  class="w-full text-left px-4 py-3 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-700 font-medium transition">
                   Review Pending Requests ({stats().pendingApprovals || 0})
                 </button>
               </Show>

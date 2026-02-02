@@ -18,6 +18,7 @@ export default function Maintenance() {
     description: "",
     priority: "MEDIUM",
     assetId: "", // ideally this would be a dropdown selection
+    maintenanceType: "PREVENTIVE",
   });
 
   const openAddModal = () => {
@@ -26,6 +27,7 @@ export default function Maintenance() {
       description: "",
       priority: "MEDIUM",
       assetId: "",
+      maintenanceType: "PREVENTIVE",
     });
     setIsModalOpen(true);
   };
@@ -153,6 +155,21 @@ export default function Maintenance() {
               class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500"
               required
             />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              Maintenance Type
+            </label>
+            <select
+              name="maintenanceType"
+              value={formData().maintenanceType}
+              onInput={handleInput}
+              class="mt-1 block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-blue-500"
+            >
+              <option value="PREVENTIVE">Preventive</option>
+              <option value="CORRECTIVE">Corrective</option>
+              <option value="EMERGENCY">Emergency</option>
+            </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">

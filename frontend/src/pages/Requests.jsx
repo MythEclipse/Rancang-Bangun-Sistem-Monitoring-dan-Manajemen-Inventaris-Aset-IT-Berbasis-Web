@@ -58,24 +58,34 @@ export default function Requests() {
     }
   };
 
-  const handleStatusChange = async (requestId, status) => {
-    if (!confirm(`Are you sure you want to ${status} this request?`)) return;
+  const handleStatusChange = async (requestId, action) => {
+    const message = action === "APPROVED" ? "approve" : "reject";
+    if (!confirm(`Are you sure you want to ${message} this request?`)) return;
 
     try {
-      const response = await fetch(`/api/requests/${requestId}/status`, {
-        method: "PATCH",
+      const endpoint = action === "APPROVED" 
+        ? `/api/requests/${requestId}/approve` 
+        : `/api/requests/${requestId}/reject`;
+      
+      const payload = action === "APPROVED" 
+        ? { notes: "" }
+        : { reason: "Rejected by manager" };
+
+      const response = await fetch(endpoint, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authStore.token()}`,
         },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         refetch();
-        alert(`Request ${status} successfully!`);
+        alert(`Request ${message}d successfully!`);
       } else {
-        alert("Failed to update status");
+        const err = await response.json();
+        alert("Failed to update status: " + (err.error || "Unknown error"));
       }
     } catch (error) {
       alert("Network error");
