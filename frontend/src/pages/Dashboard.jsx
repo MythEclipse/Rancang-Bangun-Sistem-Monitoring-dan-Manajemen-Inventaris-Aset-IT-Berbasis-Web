@@ -30,29 +30,8 @@ const StatCard = (props) => (
 export default function Dashboard() {
   const [stats] = createResource(fetchStats);
 
-  const handleCreateMaintenance = () => {
-    // Navigate or open modal for creating maintenance log
-    window.location.href = "#/maintenance";
-  };
-
-  const handleSubmitRequest = () => {
-    // Navigate to requests page
-    window.location.href = "#/requests";
-  };
-
-  const handleAddUser = () => {
-    // Navigate to users management
-    window.location.href = "#/admin/users";
-  };
-
-  const handleAddAsset = () => {
-    // Navigate to assets page
-    window.location.href = "#/assets";
-  };
-
-  const handleReviewRequests = () => {
-    // Navigate to requests for manager approval
-    window.location.href = "#/requests";
+  const navigateTo = (path) => {
+    window.location.pathname = path;
   };
 
   return (
@@ -113,31 +92,31 @@ export default function Dashboard() {
             <div class="space-y-3">
               <Show when={authStore.user()?.role === "TECHNICIAN"}>
                 <button 
-                  onClick={handleCreateMaintenance}
+                  onClick={() => navigateTo("/maintenance")}
                   class="w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-700 font-medium transition">
                   + Create New Maintenance Log
                 </button>
                 <button 
-                  onClick={handleSubmitRequest}
+                  onClick={() => navigateTo("/requests")}
                   class="w-full text-left px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg text-purple-700 font-medium transition">
                   + Submit New Request
                 </button>
               </Show>
               <Show when={authStore.user()?.role === "ADMIN"}>
                 <button 
-                  onClick={handleAddUser}
+                  onClick={() => navigateTo("/users")}
                   class="w-full text-left px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg text-green-700 font-medium transition">
                   + Add New User
                 </button>
                 <button 
-                  onClick={handleAddAsset}
+                  onClick={() => navigateTo("/assets")}
                   class="w-full text-left px-4 py-3 bg-indigo-50 hover:bg-indigo-100 rounded-lg text-indigo-700 font-medium transition">
                   + Add New Asset
                 </button>
               </Show>
               <Show when={authStore.user()?.role === "MANAGER"}>
                 <button 
-                  onClick={handleReviewRequests}
+                  onClick={() => navigateTo("/requests")}
                   class="w-full text-left px-4 py-3 bg-yellow-50 hover:bg-yellow-100 rounded-lg text-yellow-700 font-medium transition">
                   Review Pending Requests ({stats().pendingApprovals || 0})
                 </button>
